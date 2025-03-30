@@ -17,7 +17,7 @@ public class InfoController {
 
   private final InfoService infoService;
 
-  @GetMapping("/board")
+  @GetMapping("/boards")
   public ResponseEntity<BoardResponse> getBoards(@ModelAttribute @Valid BoardRequest request)
       throws CustomException {
     BoardResponse response = infoService.getBoards(request);

@@ -3,9 +3,11 @@ package jwt.auth.demo.dto.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class WithdrawRequest {
   @NotBlank(message = "이메일은 필수 입니다.")
   @Email(message = "이메일 형식이 아닙니다.")
