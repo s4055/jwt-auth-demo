@@ -1,5 +1,6 @@
 package jwt.auth.demo.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jwt.auth.demo.dto.request.LoginRequest;
 import jwt.auth.demo.dto.request.LogoutRequest;
@@ -39,17 +40,17 @@ public class UserController {
 
   @PostMapping("/logout")
   public ResponseEntity<LogoutResponse> logout(
-      @RequestBody @Valid LogoutRequest request, @RequestHeader("Authorization") String token)
+      @RequestBody @Valid LogoutRequest request, HttpServletRequest httpServletRequest)
       throws CustomException {
-    LogoutResponse response = userService.logout(request, token);
+    LogoutResponse response = userService.logout(request, httpServletRequest);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
-  @DeleteMapping("/delete")
+  @DeleteMapping("/withdraw")
   public ResponseEntity<WithdrawResponse> withdraw(
-      @RequestBody @Valid WithdrawRequest request, @RequestHeader("Authorization") String token)
+      @RequestBody @Valid WithdrawRequest request, HttpServletRequest httpServletRequest)
       throws CustomException {
-    WithdrawResponse response = userService.withdraw(request, token);
+    WithdrawResponse response = userService.withdraw(request, httpServletRequest);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

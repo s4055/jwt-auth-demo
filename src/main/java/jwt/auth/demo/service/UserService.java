@@ -1,5 +1,6 @@
 package jwt.auth.demo.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jwt.auth.demo.dto.request.LoginRequest;
 import jwt.auth.demo.dto.request.LogoutRequest;
 import jwt.auth.demo.dto.request.SignupRequest;
@@ -20,8 +21,8 @@ public interface UserService {
   LoginResponse login(LoginRequest request) throws CustomException;
 
   @Transactional(readOnly = true)
-  LogoutResponse logout(LogoutRequest request, String token) throws CustomException;
+  LogoutResponse logout(LogoutRequest request, HttpServletRequest httpServletRequest) throws CustomException;
 
   @Transactional(readOnly = false)
-  WithdrawResponse withdraw(WithdrawRequest request, String token) throws CustomException;
+  WithdrawResponse withdraw(WithdrawRequest request, HttpServletRequest httpServletRequest) throws CustomException;
 }

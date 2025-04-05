@@ -1,5 +1,6 @@
 package jwt.auth.demo.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import jwt.auth.demo.dto.request.LoginRequest;
 import jwt.auth.demo.dto.request.LogoutRequest;
@@ -57,12 +58,9 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public LogoutResponse logout(LogoutRequest request, String token) throws CustomException {
-    if (!JwtUtil.validateToken(token.replace("Bearer ", ""))) {
-      throw new CustomException(ErrorCode.UNAUTHORIZED_TOKEN);
-    }
-
-    String email = JwtUtil.getEmail(token.replace("Bearer ", ""));
+  public LogoutResponse logout(LogoutRequest request, HttpServletRequest httpServletRequest)
+      throws CustomException {
+    String email = httpServletRequest.getAttribute("email").toString();
 
     Users users =
         userRepository
@@ -75,12 +73,9 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public WithdrawResponse withdraw(WithdrawRequest request, String token) throws CustomException {
-    if (!JwtUtil.validateToken(token.replace("Bearer ", ""))) {
-      throw new CustomException(ErrorCode.UNAUTHORIZED_TOKEN);
-    }
-
-    String email = JwtUtil.getEmail(token.replace("Bearer ", ""));
+  public WithdrawResponse withdraw(WithdrawRequest request, HttpServletRequest httpServletRequest)
+      throws CustomException {
+    String email = httpServletRequest.getAttribute("email").toString();
 
     Users user =
         userRepository

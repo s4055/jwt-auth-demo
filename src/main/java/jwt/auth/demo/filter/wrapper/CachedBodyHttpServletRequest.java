@@ -1,4 +1,4 @@
-package jwt.auth.demo.filter;
+package jwt.auth.demo.filter.wrapper;
 
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
