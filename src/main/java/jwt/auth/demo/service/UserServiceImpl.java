@@ -14,6 +14,7 @@ import jwt.auth.demo.enums.UserStatus;
 import jwt.auth.demo.exception.CustomException;
 import jwt.auth.demo.exception.ErrorCode;
 import jwt.auth.demo.repository.UserRepository;
+import jwt.auth.demo.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -50,15 +51,22 @@ public class UserServiceImpl implements UserService {
 
     log.info("로그인 유저 = {}", users.getName());
 
-    return new LoginResponse(ErrorCode.OK);
+    String token = JwtUtil.createToken(users.getEmail());
+
+    return new LoginResponse(ErrorCode.OK, token);
   }
 
   @Override
-  public LogoutResponse logout(LogoutRequest request) throws CustomException {
+  public LogoutResponse logout(LogoutRequest request, String token) throws CustomException {
+    if (!JwtUtil.validateToken(token.replace("Bearer ", ""))) {
+      throw new CustomException(ErrorCode.UNAUTHORIZED_TOKEN);
+    }
+
+    String email = JwtUtil.getEmail(token.replace("Bearer ", ""));
+
     Users users =
         userRepository
-            .findByEmailAndPasswordAndStatus(
-                request.getEmail(), request.getPassword(), UserStatus.ACTIVE)
+            .findByEmailAndPasswordAndStatus(email, request.getPassword(), UserStatus.ACTIVE)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
     log.info("로그아웃 유저 = {}", users.getName());
@@ -67,11 +75,16 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public WithdrawResponse withdraw(WithdrawRequest request) throws CustomException {
+  public WithdrawResponse withdraw(WithdrawRequest request, String token) throws CustomException {
+    if (!JwtUtil.validateToken(token.replace("Bearer ", ""))) {
+      throw new CustomException(ErrorCode.UNAUTHORIZED_TOKEN);
+    }
+
+    String email = JwtUtil.getEmail(token.replace("Bearer ", ""));
+
     Users user =
         userRepository
-            .findByEmailAndPasswordAndStatus(
-                request.getEmail(), request.getPassword(), UserStatus.ACTIVE)
+            .findByEmailAndPasswordAndStatus(email, request.getPassword(), UserStatus.ACTIVE)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
     user.withdraw();

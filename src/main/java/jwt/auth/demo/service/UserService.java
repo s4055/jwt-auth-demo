@@ -20,8 +20,8 @@ public interface UserService {
   LoginResponse login(LoginRequest request) throws CustomException;
 
   @Transactional(readOnly = true)
-  LogoutResponse logout(LogoutRequest request) throws CustomException;
+  LogoutResponse logout(LogoutRequest request, String token) throws CustomException;
 
   @Transactional(readOnly = false)
-  WithdrawResponse withdraw(WithdrawRequest request) throws CustomException;
+  WithdrawResponse withdraw(WithdrawRequest request, String token) throws CustomException;
 }

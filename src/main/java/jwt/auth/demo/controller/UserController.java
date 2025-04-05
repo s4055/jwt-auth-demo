@@ -38,16 +38,18 @@ public class UserController {
   }
 
   @PostMapping("/logout")
-  public ResponseEntity<LogoutResponse> logout(@RequestBody @Valid LogoutRequest request)
+  public ResponseEntity<LogoutResponse> logout(
+      @RequestBody @Valid LogoutRequest request, @RequestHeader("Authorization") String token)
       throws CustomException {
-    LogoutResponse response = userService.logout(request);
+    LogoutResponse response = userService.logout(request, token);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
   @DeleteMapping("/delete")
-  public ResponseEntity<WithdrawResponse> withdraw(@RequestBody @Valid WithdrawRequest request)
+  public ResponseEntity<WithdrawResponse> withdraw(
+      @RequestBody @Valid WithdrawRequest request, @RequestHeader("Authorization") String token)
       throws CustomException {
-    WithdrawResponse response = userService.withdraw(request);
+    WithdrawResponse response = userService.withdraw(request, token);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }
