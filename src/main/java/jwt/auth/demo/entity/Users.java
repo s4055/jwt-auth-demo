@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import jwt.auth.demo.dto.request.SignUpRequest;
+import jwt.auth.demo.dto.request.SignupRequest;
 import jwt.auth.demo.enums.UserStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -62,7 +62,7 @@ public class Users extends BaseEntity {
     this.withdrawDt = LocalDateTime.now();
   }
 
-  public Users(SignUpRequest request) {
+  public Users(SignupRequest request) {
     this.email = request.getEmail();
     this.password = request.getPassword();
     this.name = request.getName();

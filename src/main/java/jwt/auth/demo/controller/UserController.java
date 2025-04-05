@@ -3,11 +3,11 @@ package jwt.auth.demo.controller;
 import jakarta.validation.Valid;
 import jwt.auth.demo.dto.request.LoginRequest;
 import jwt.auth.demo.dto.request.LogoutRequest;
-import jwt.auth.demo.dto.request.SignUpRequest;
+import jwt.auth.demo.dto.request.SignupRequest;
 import jwt.auth.demo.dto.request.WithdrawRequest;
 import jwt.auth.demo.dto.response.LoginResponse;
 import jwt.auth.demo.dto.response.LogoutResponse;
-import jwt.auth.demo.dto.response.SignUpResponse;
+import jwt.auth.demo.dto.response.SignupResponse;
 import jwt.auth.demo.dto.response.WithdrawResponse;
 import jwt.auth.demo.exception.CustomException;
 import jwt.auth.demo.service.UserService;
@@ -24,9 +24,9 @@ public class UserController {
   private final UserService userService;
 
   @PostMapping("/signup")
-  public ResponseEntity<SignUpResponse> signUp(@RequestBody @Valid SignUpRequest request)
+  public ResponseEntity<SignupResponse> signup(@RequestBody @Valid SignupRequest request)
       throws CustomException {
-    SignUpResponse response = userService.signUp(request);
+    SignupResponse response = userService.signup(request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 

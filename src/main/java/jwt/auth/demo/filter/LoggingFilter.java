@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 @Slf4j
@@ -25,12 +24,12 @@ public class LoggingFilter implements Filter {
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-    ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(httpRequest);
+    CachedBodyHttpServletRequest requestWrapper = new CachedBodyHttpServletRequest(httpRequest);
     ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(httpResponse);
 
     long startTime = System.currentTimeMillis();
 
-    String requestBody = getRequestBody(requestWrapper);
+    String requestBody = requestWrapper.getCachedBodyAsString();
 
     log.info("[Request] {} {}", httpRequest.getMethod(), httpRequest.getRequestURI());
     printHeaders(httpRequest);
@@ -53,11 +52,6 @@ public class LoggingFilter implements Filter {
     log.info("[Body] {}", responseBody);
 
     responseWrapper.copyBodyToResponse();
-  }
-
-  private String getRequestBody(ContentCachingRequestWrapper request) {
-    byte[] content = request.getContentAsByteArray();
-    return content.length > 0 ? new String(content, StandardCharsets.UTF_8) : "EMPTY";
   }
 
   private String getResponseBody(ContentCachingResponseWrapper response) throws IOException {
