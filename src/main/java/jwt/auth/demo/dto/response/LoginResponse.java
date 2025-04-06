@@ -7,10 +7,10 @@ import lombok.Getter;
 @Getter
 public class LoginResponse extends CommonResponse {
 
-  private String token;
+  private String accessToken;
 
-  public LoginResponse(ErrorCode errorCode, String token) {
+  public LoginResponse(ErrorCode errorCode, TokenResponse tokenResponse) {
     super(errorCode);
-    this.token = token;
+    this.accessToken = tokenResponse.getAccessToken();
   }
 }

@@ -47,13 +47,10 @@ public class JwtFilter extends OncePerRequestFilter {
   }
 
   private void sendErrorResponse(HttpServletResponse response) throws IOException {
+    CommonResponse commonResponse = new CommonResponse(ErrorCode.UNAUTHORIZED_TOKEN);
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-    response
-        .getWriter()
-        .write(
-            new ObjectMapper()
-                .writeValueAsString(new CommonResponse(ErrorCode.UNAUTHORIZED_TOKEN)));
+    response.getWriter().write(new ObjectMapper().writeValueAsString(commonResponse));
   }
 }

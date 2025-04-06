@@ -2,14 +2,12 @@ package jwt.auth.demo.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import jwt.auth.demo.dto.request.LoginRequest;
 import jwt.auth.demo.dto.request.LogoutRequest;
 import jwt.auth.demo.dto.request.SignupRequest;
 import jwt.auth.demo.dto.request.WithdrawRequest;
-import jwt.auth.demo.dto.response.LoginResponse;
-import jwt.auth.demo.dto.response.LogoutResponse;
-import jwt.auth.demo.dto.response.SignupResponse;
-import jwt.auth.demo.dto.response.WithdrawResponse;
+import jwt.auth.demo.dto.response.*;
 import jwt.auth.demo.entity.Users;
 import jwt.auth.demo.enums.UserStatus;
 import jwt.auth.demo.exception.CustomException;
@@ -18,6 +16,7 @@ import jwt.auth.demo.repository.UserRepository;
 import jwt.auth.demo.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
+  private final RedisTemplate<String, String> redisTemplate;
 
   @Override
   public SignupResponse signup(SignupRequest request) throws CustomException {
@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public LoginResponse login(LoginRequest request) throws CustomException {
+  public TokenResponse login(LoginRequest request) throws CustomException {
     Users users =
         userRepository
             .findByEmailAndPasswordAndStatus(
@@ -52,9 +52,12 @@ public class UserServiceImpl implements UserService {
 
     log.info("로그인 유저 = {}", users.getName());
 
-    String token = JwtUtil.createToken(users.getEmail());
+    String accessToken = JwtUtil.generateAccessToken(users.getEmail());
+    String refreshToken = JwtUtil.generateRefreshToken(users.getEmail());
 
-    return new LoginResponse(ErrorCode.OK, token);
+    redisTemplate.opsForValue().set(users.getEmail(), refreshToken, 7, TimeUnit.DAYS);
+
+    return new TokenResponse(accessToken, refreshToken);
   }
 
   @Override
@@ -68,6 +71,8 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
     log.info("로그아웃 유저 = {}", users.getName());
+
+    redisTemplate.delete(email);
 
     return new LogoutResponse(ErrorCode.OK);
   }
@@ -83,6 +88,9 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
     user.withdraw();
+
+    redisTemplate.delete(email);
+
     return new WithdrawResponse(ErrorCode.OK);
   }
 }
