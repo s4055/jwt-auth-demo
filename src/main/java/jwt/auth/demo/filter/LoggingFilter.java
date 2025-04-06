@@ -33,9 +33,9 @@ public class LoggingFilter implements Filter {
     String requestBody = requestWrapper.getCachedBodyAsString();
 
     log.info("[Request] {} {}", httpRequest.getMethod(), httpRequest.getRequestURI());
-    printHeaders(httpRequest);
-    printParameters(httpRequest);
-    printSessionInfo(httpRequest);
+    printRequestHeaders(httpRequest);
+    printRequestParameters(httpRequest);
+    printRequestSession(httpRequest);
     log.info("[Body] {}", requestBody);
 
     chain.doFilter(requestWrapper, responseWrapper);
@@ -50,6 +50,7 @@ public class LoggingFilter implements Filter {
         httpRequest.getRequestURI(),
         httpResponse.getStatus(),
         duration);
+    printResponseHeaders(responseWrapper);
     log.info("[Body] {}", responseBody);
 
     responseWrapper.copyBodyToResponse();
@@ -60,7 +61,7 @@ public class LoggingFilter implements Filter {
     return content.length > 0 ? new String(content, StandardCharsets.UTF_8) : "EMPTY";
   }
 
-  private void printHeaders(HttpServletRequest request) {
+  private void printRequestHeaders(HttpServletRequest request) {
     Enumeration<String> headerNames = request.getHeaderNames();
 
     if (headerNames == null) return;
@@ -71,7 +72,7 @@ public class LoggingFilter implements Filter {
     }
   }
 
-  private void printParameters(HttpServletRequest request) {
+  private void printRequestParameters(HttpServletRequest request) {
     Map<String, String[]> parameterMap = request.getParameterMap();
     for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
       for (String value : entry.getValue()) {
@@ -80,9 +81,15 @@ public class LoggingFilter implements Filter {
     }
   }
 
-  private void printSessionInfo(HttpServletRequest request) {
+  private void printRequestSession(HttpServletRequest request) {
     log.info(
         "[SessionID]={}",
         request.getSession(false) == null ? "NO_SESSION" : request.getSession().getId());
+  }
+
+  private void printResponseHeaders(ContentCachingResponseWrapper response) {
+    for (String headerName : response.getHeaderNames()) {
+      log.info("[Headers][{}]={}", headerName, response.getHeader(headerName));
+    }
   }
 }
