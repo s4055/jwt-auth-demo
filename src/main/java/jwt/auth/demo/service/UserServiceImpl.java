@@ -1,6 +1,8 @@
 package jwt.auth.demo.service;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import jwt.auth.demo.dto.request.LoginRequest;
@@ -37,7 +39,7 @@ public class UserServiceImpl implements UserService {
 
     Users users = userRepository.save(new Users(request));
 
-    log.info("유저 저장 = {}", users.getId());
+    log.info("USER SAVE = {}", users.getId());
 
     return new SignupResponse(ErrorCode.OK);
   }
@@ -50,12 +52,12 @@ public class UserServiceImpl implements UserService {
                 request.getEmail(), request.getPassword(), UserStatus.ACTIVE)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
-    log.info("로그인 유저 = {}", users.getName());
+    log.info("LOGIN USER = {}", users.getName());
 
     String accessToken = JwtUtil.generateAccessToken(users.getEmail());
     String refreshToken = JwtUtil.generateRefreshToken(users.getEmail());
 
-    redisTemplate.opsForValue().set(users.getEmail(), refreshToken, 7, TimeUnit.DAYS);
+    redisTemplate.opsForValue().set(users.getEmail(), refreshToken, 7, TimeUnit.DAYS); // 7 days
 
     return new TokenResponse(accessToken, refreshToken);
   }
@@ -70,9 +72,9 @@ public class UserServiceImpl implements UserService {
             .findByEmailAndPasswordAndStatus(email, request.getPassword(), UserStatus.ACTIVE)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
-    log.info("로그아웃 유저 = {}", users.getName());
+    log.info("LOGOUT USER = {}", users.getName());
 
-    redisTemplate.delete(email);
+    redisTemplate.delete(email); // refresh token delete
 
     return new LogoutResponse(ErrorCode.OK);
   }
@@ -89,8 +91,33 @@ public class UserServiceImpl implements UserService {
 
     user.withdraw();
 
-    redisTemplate.delete(email);
+    redisTemplate.delete(email); // refresh token delete
 
     return new WithdrawResponse(ErrorCode.OK);
+  }
+
+  @Override
+  public RefreshTokenResponse reissue(HttpServletRequest httpServletRequest)
+      throws CustomException {
+    String refreshToken =
+        Arrays.stream(Optional.ofNullable(httpServletRequest.getCookies()).orElse(new Cookie[0]))
+            .filter(c -> "refreshToken".equals(c.getName()))
+            .findFirst()
+            .map(Cookie::getValue)
+            .orElseThrow(() -> new CustomException(ErrorCode.NO_REFRESH_TOKEN));
+
+    if (!JwtUtil.validateToken(refreshToken)) {
+      throw new CustomException(ErrorCode.UNAUTHORIZED_TOKEN);
+    }
+
+    String email = JwtUtil.getEmail(refreshToken);
+    String storedToken = redisTemplate.opsForValue().get(email);
+
+    if (!refreshToken.equals(storedToken)) {
+      throw new CustomException(ErrorCode.REFRESH_TOKEN_MISMATCH);
+    }
+
+    String newAccessToken = JwtUtil.generateAccessToken(email);
+    return new RefreshTokenResponse(ErrorCode.OK, newAccessToken);
   }
 }

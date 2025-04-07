@@ -11,10 +11,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
 
+  private static final String JWT = "jwtAuth";
+
   @Bean
   public OpenAPI openAPI() {
     Info info = new Info().title("jwt demo").version("0.0.1").description("JWT 토큰 연습");
-    SecurityRequirement securityRequirement = new SecurityRequirement().addList("jwtAuth");
+    SecurityRequirement securityRequirement = new SecurityRequirement().addList(JWT);
     Components components =
         new Components()
             .addSecuritySchemes(

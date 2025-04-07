@@ -40,7 +40,8 @@ public class UserController {
         ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
             .httpOnly(true)
             .secure(true)
-            .maxAge(7 * 24 * 60 * 60)
+            .path("/auth/refresh")
+            .maxAge(7 * 24 * 60 * 60) // 7 days
             .sameSite("Strict")
             .build();
 
@@ -65,6 +66,13 @@ public class UserController {
       @RequestBody @Valid WithdrawRequest request, HttpServletRequest httpServletRequest)
       throws CustomException {
     WithdrawResponse response = userService.withdraw(request, httpServletRequest);
+    return ResponseEntity.status(HttpStatus.OK).body(response);
+  }
+
+  @PostMapping("/refresh")
+  public ResponseEntity<RefreshTokenResponse> reissue(HttpServletRequest httpServletRequest)
+      throws CustomException {
+    RefreshTokenResponse response = userService.reissue(httpServletRequest);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

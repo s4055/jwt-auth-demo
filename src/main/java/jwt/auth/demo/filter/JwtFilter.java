@@ -41,7 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
   private boolean ignoreURI(HttpServletRequest request) {
     return switch (request.getRequestURI()) {
-      case "/auth/signup", "/auth/login" -> true;
+      case "/auth/signup", "/auth/login", "/auth/refresh" -> true;
       default -> false;
     };
   }

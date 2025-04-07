@@ -18,8 +18,12 @@ public interface UserService {
   TokenResponse login(LoginRequest request) throws CustomException;
 
   @Transactional(readOnly = true)
-  LogoutResponse logout(LogoutRequest request, HttpServletRequest httpServletRequest) throws CustomException;
+  LogoutResponse logout(LogoutRequest request, HttpServletRequest httpServletRequest)
+      throws CustomException;
 
   @Transactional(readOnly = false)
-  WithdrawResponse withdraw(WithdrawRequest request, HttpServletRequest httpServletRequest) throws CustomException;
+  WithdrawResponse withdraw(WithdrawRequest request, HttpServletRequest httpServletRequest)
+      throws CustomException;
+
+  RefreshTokenResponse reissue(HttpServletRequest httpServletRequest) throws CustomException;
 }
