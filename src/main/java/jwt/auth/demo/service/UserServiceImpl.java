@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+  private final JwtUtil jwtUtil;
   private final UserRepository userRepository;
   private final RedisTemplate<String, String> redisTemplate;
 
@@ -54,8 +55,8 @@ public class UserServiceImpl implements UserService {
 
     log.info("LOGIN USER = {}", users.getName());
 
-    String accessToken = JwtUtil.generateAccessToken(users.getEmail());
-    String refreshToken = JwtUtil.generateRefreshToken(users.getEmail());
+    String accessToken = jwtUtil.generateAccessToken(users.getEmail());
+    String refreshToken = jwtUtil.generateRefreshToken(users.getEmail());
 
     redisTemplate.opsForValue().set(users.getEmail(), refreshToken, 7, TimeUnit.DAYS); // 7 days
 
@@ -106,18 +107,18 @@ public class UserServiceImpl implements UserService {
             .map(Cookie::getValue)
             .orElseThrow(() -> new CustomException(ErrorCode.NO_REFRESH_TOKEN));
 
-    if (!JwtUtil.validateToken(refreshToken)) {
+    if (!jwtUtil.validateToken(refreshToken)) {
       throw new CustomException(ErrorCode.UNAUTHORIZED_TOKEN);
     }
 
-    String email = JwtUtil.getEmail(refreshToken);
+    String email = jwtUtil.getEmail(refreshToken);
     String storedToken = redisTemplate.opsForValue().get(email);
 
     if (!refreshToken.equals(storedToken)) {
       throw new CustomException(ErrorCode.REFRESH_TOKEN_MISMATCH);
     }
 
-    String newAccessToken = JwtUtil.generateAccessToken(email);
+    String newAccessToken = jwtUtil.generateAccessToken(email);
     return new RefreshTokenResponse(ErrorCode.OK, newAccessToken);
   }
 }

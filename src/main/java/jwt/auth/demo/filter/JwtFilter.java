@@ -10,12 +10,16 @@ import java.nio.charset.StandardCharsets;
 import jwt.auth.demo.dto.common.CommonResponse;
 import jwt.auth.demo.exception.ErrorCode;
 import jwt.auth.demo.util.JwtUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
+@RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
+
+  private final JwtUtil jwtUtil;
 
   @Override
   protected void doFilterInternal(
@@ -28,12 +32,12 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     String token = request.getHeader("Authorization");
-    if (token == null || !JwtUtil.validateToken(token.replace("Bearer ", ""))) {
+    if (token == null || !jwtUtil.validateToken(token.replace("Bearer ", ""))) {
       sendErrorResponse(response);
       return;
     }
 
-    String email = JwtUtil.getEmail(token.replace("Bearer ", ""));
+    String email = jwtUtil.getEmail(token.replace("Bearer ", ""));
     request.setAttribute("email", email);
 
     filterChain.doFilter(request, response);

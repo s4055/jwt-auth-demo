@@ -6,15 +6,17 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 @Slf4j
+@Component
 public class JwtUtil {
 
   private static final String SECRET_KEY = "MySecretKey";
   private static final long ACCESS_TOKEN_VALIDITY = 1000 * 60 * 30; // 30분
   private static final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 60 * 24 * 7; // 7일
 
-  public static String generateAccessToken(String email) {
+  public String generateAccessToken(String email) {
     Claims claims = Jwts.claims().setSubject(email);
     Date now = new Date();
     Date validity = new Date(now.getTime() + ACCESS_TOKEN_VALIDITY);
@@ -27,7 +29,7 @@ public class JwtUtil {
         .compact();
   }
 
-  public static String generateRefreshToken(String email) {
+  public String generateRefreshToken(String email) {
     Claims claims = Jwts.claims().setSubject(email);
     Date now = new Date();
     Date validity = new Date(now.getTime() + REFRESH_TOKEN_VALIDITY);
@@ -40,11 +42,11 @@ public class JwtUtil {
         .compact();
   }
 
-  public static String getEmail(String token) {
+  public String getEmail(String token) {
     return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody().getSubject();
   }
 
-  public static boolean validateToken(String token) {
+  public boolean validateToken(String token) {
     try {
       Jws<Claims> claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
       return true;
