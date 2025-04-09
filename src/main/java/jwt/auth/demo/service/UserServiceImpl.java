@@ -19,6 +19,8 @@ import jwt.auth.demo.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -66,7 +68,8 @@ public class UserServiceImpl implements UserService {
   @Override
   public LogoutResponse logout(LogoutRequest request, HttpServletRequest httpServletRequest)
       throws CustomException {
-    String email = httpServletRequest.getAttribute("email").toString();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String email = authentication.getName();
 
     Users users =
         userRepository
@@ -83,7 +86,8 @@ public class UserServiceImpl implements UserService {
   @Override
   public WithdrawResponse withdraw(WithdrawRequest request, HttpServletRequest httpServletRequest)
       throws CustomException {
-    String email = httpServletRequest.getAttribute("email").toString();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String email = authentication.getName();
 
     Users user =
         userRepository

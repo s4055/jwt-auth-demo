@@ -22,6 +22,8 @@ public class LoggingFilter implements Filter {
       return;
     }
 
+    log.debug("[LoggingFilter] =====>");
+
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     HttpServletResponse httpResponse = (HttpServletResponse) response;
 

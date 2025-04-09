@@ -1,18 +1,18 @@
 package jwt.auth.demo.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import jwt.auth.demo.dto.common.CommonResponse;
-import jwt.auth.demo.exception.ErrorCode;
+import java.util.Collections;
 import jwt.auth.demo.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
@@ -26,35 +26,30 @@ public class JwtFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
-    if (ignoreURI(request)) {
-      filterChain.doFilter(request, response);
-      return;
-    }
+    log.debug("[JwtFilter] =====>");
 
-    String token = request.getHeader("Authorization");
-    if (token == null || !jwtUtil.validateToken(token.replace("Bearer ", ""))) {
-      sendErrorResponse(response);
-      return;
+    String token = resolveToken(request);
+    if (token != null) {
+      try {
+        if (jwtUtil.validateToken(token)) {
+          String email = jwtUtil.getEmail(token);
+          Authentication auth =
+              new UsernamePasswordAuthenticationToken(email, null, Collections.emptyList());
+          SecurityContextHolder.getContext().setAuthentication(auth);
+        }
+      } catch (Exception e) {
+        throw new BadCredentialsException("JWT validation failed");
+      }
     }
-
-    String email = jwtUtil.getEmail(token.replace("Bearer ", ""));
-    request.setAttribute("email", email);
 
     filterChain.doFilter(request, response);
   }
 
-  private boolean ignoreURI(HttpServletRequest request) {
-    return switch (request.getRequestURI()) {
-      case "/auth/signup", "/auth/login", "/auth/refresh" -> true;
-      default -> false;
-    };
-  }
-
-  private void sendErrorResponse(HttpServletResponse response) throws IOException {
-    CommonResponse commonResponse = new CommonResponse(ErrorCode.UNAUTHORIZED_TOKEN);
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-    response.getWriter().write(new ObjectMapper().writeValueAsString(commonResponse));
+  private String resolveToken(HttpServletRequest request) {
+    String bearer = request.getHeader("Authorization");
+    if (bearer != null && bearer.startsWith("Bearer ")) {
+      return bearer.substring(7);
+    }
+    return null;
   }
 }

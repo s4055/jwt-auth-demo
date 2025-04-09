@@ -1,8 +1,6 @@
 package jwt.auth.demo.config;
 
-import jwt.auth.demo.filter.JwtFilter;
 import jwt.auth.demo.filter.LoggingFilter;
-import jwt.auth.demo.util.JwtUtil;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,16 +13,7 @@ public class FilterConfig {
     FilterRegistrationBean<LoggingFilter> registrationBean = new FilterRegistrationBean<>();
     registrationBean.setFilter(new LoggingFilter());
     registrationBean.addUrlPatterns("/auth/*");
-    registrationBean.setOrder(1);
-    return registrationBean;
-  }
-
-  @Bean
-  public FilterRegistrationBean<JwtFilter> jwtFilter() {
-    FilterRegistrationBean<JwtFilter> registrationBean = new FilterRegistrationBean<>();
-    registrationBean.setFilter(new JwtFilter(new JwtUtil()));
-    registrationBean.addUrlPatterns("/auth/*");
-    registrationBean.setOrder(2);
+    registrationBean.setOrder(Integer.MIN_VALUE);
     return registrationBean;
   }
 }
