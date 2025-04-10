@@ -69,4 +69,21 @@ public class Users extends BaseEntity {
     this.birthDt = request.getBirthDt();
     this.joinDt = LocalDateTime.now();
   }
+
+  public Users(
+      String id,
+      String email,
+      String password,
+      String name,
+      LocalDate birthDt,
+      UserStatus status,
+      LocalDateTime joinDt) {
+    this.id = id;
+    this.email = email;
+    this.password = password;
+    this.name = name;
+    this.birthDt = birthDt;
+    this.status = status;
+    this.joinDt = joinDt;
+  }
 }

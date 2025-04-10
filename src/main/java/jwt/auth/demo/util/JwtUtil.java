@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 public class JwtUtil {
 
   private static final String SECRET_KEY = "MySecretKey";
-  private static final long ACCESS_TOKEN_VALIDITY = 1000 * 60 * 30; // 30분
-  private static final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 60 * 24 * 7; // 7일
+  private static final long ACCESS_TOKEN_VALIDITY = 1000 * 60 * 30; // 30 minutes
+  private static final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 60 * 24 * 7; // 7 days
 
   public String generateAccessToken(String email) {
     Claims claims = Jwts.claims().setSubject(email);
