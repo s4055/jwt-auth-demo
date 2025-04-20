@@ -1,6 +1,7 @@
 package jwt.auth.demo.controller;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -16,13 +17,16 @@ import jwt.auth.demo.dto.request.LoginRequest;
 import jwt.auth.demo.dto.request.LogoutRequest;
 import jwt.auth.demo.dto.request.SignupRequest;
 import jwt.auth.demo.dto.request.WithdrawRequest;
+import jwt.auth.demo.entity.Users;
 import jwt.auth.demo.exception.ErrorCode;
+import jwt.auth.demo.repository.UserRepository;
 import jwt.auth.demo.util.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.Rollback;
@@ -36,6 +40,7 @@ public class UserControllerTest {
   @Autowired private ObjectMapper objectMapper;
   @Autowired private RedisTemplate<String, String> redisTemplate;
   @Autowired private JwtUtil jwtUtil;
+  @Autowired private UserRepository userRepository;
 
   private String accessToken;
   private String refreshToken;
@@ -47,6 +52,24 @@ public class UserControllerTest {
     accessToken = jwtUtil.generateAccessToken(email);
     refreshToken = jwtUtil.generateRefreshToken(email);
     redisTemplate.opsForValue().set(email, refreshToken, 7, TimeUnit.DAYS);
+  }
+
+  @Test
+  void 통합_테스트_회원가입_이메일_유니크() throws Exception {
+    SignupRequest request =
+        new SignupRequest("test@example.com", "1111aaaa!!!!", "test", LocalDate.now());
+
+    Users users1 = new Users(request);
+    Users users2 = new Users(request);
+
+    userRepository.save(users1);
+
+    // DB 제약 조건 위배
+    assertThrows(
+        DataIntegrityViolationException.class,
+        () -> {
+          userRepository.saveAndFlush(users2);
+        });
   }
 
   @Rollback(value = true)
